@@ -28,6 +28,8 @@ class CustomAnalysisStage(StructuralMechanicsAnalysis):
         nurbs_model_part = model.CreateModelPart("NurbsMesh")
         nurbs_model_part.AddNodalSolutionStepVariable(KM.DISPLACEMENT)
         nurbs_model_part.AddNodalSolutionStepVariable(KM.REACTION)
+        nurbs_model_part.CreateSubModelPart("Dirichlet_BC")
+        nurbs_model_part.CreateSubModelPart("Neumann_BC")
 
         if self.lagrange_dofs_required:
             nurbs_model_part.AddNodalSolutionStepVariable(KM.VECTOR_LAGRANGE_MULTIPLIER)
