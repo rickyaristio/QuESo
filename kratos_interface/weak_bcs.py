@@ -67,7 +67,7 @@ class PenaltySupport(WeakBcsBase):
 
                 surface_area = surface_in_nurbs_volume.Area()
                 if( surface_area > 1e-14):
-                    condition = model_part.CreateNewCondition('SupportPenaltyCondition', id_counter, quadrature_point_geometries[0], properties)
+                    condition = model_part.GetSubModelPart('Dirichlet_BC').CreateNewCondition('SupportPenaltyCondition', id_counter, quadrature_point_geometries[0], properties)
                     kratos_prescribed = KM.Vector([self.prescribed[0], self.prescribed[1], self.prescribed[2]])
                     condition.SetValue(KM.DISPLACEMENT, kratos_prescribed)
                     id_counter += 1
@@ -115,7 +115,7 @@ class LagrangeSupport(WeakBcsBase):
 
                 surface_area = surface_in_nurbs_volume.Area()
                 if( surface_area > 1e-14):
-                    condition = model_part.CreateNewCondition('SupportLagrangeCondition', id_counter, quadrature_point_geometries[0], properties)
+                    condition = model_part.GetSubModelPart('Dirichlet_BC').CreateNewCondition('SupportLagrangeCondition', id_counter, quadrature_point_geometries[0], properties)
                     kratos_prescribed = KM.Vector([self.prescribed[0], self.prescribed[1], self.prescribed[2]])
                     condition.SetValue(KM.DISPLACEMENT, kratos_prescribed)
                     id_counter += 1
@@ -161,7 +161,7 @@ class SurfaceLoad(WeakBcsBase):
 
                 weight = point.Weight() # Weight contains all mapping terms.
                 if weight > 1e-14:
-                    condition = model_part.CreateNewCondition("LoadCondition", id_counter, quadrature_point_geometries_boundary[0], properties)
+                    condition = model_part.GetSubModelPart('Neumann_BC').CreateNewCondition("LoadCondition", id_counter, quadrature_point_geometries_boundary[0], properties)
 
                     force_x = weight * self.force[0]
                     force_y = weight * self.force[1]
@@ -207,7 +207,7 @@ class PressureLoad(WeakBcsBase):
 
                 weight = point.Weight() # Weight contains all mapping terms.
                 if weight > 1e-14:
-                    condition = model_part.CreateNewCondition("LoadCondition", id_counter, quadrature_point_geometries_boundary[0], properties)
+                    condition = model_part.GetSubModelPart('Neumann_BC').CreateNewCondition("LoadCondition", id_counter, quadrature_point_geometries_boundary[0], properties)
 
                     normal = point.Normal()
                     force_x = -1.0*normal[0] * weight * self.modulus
