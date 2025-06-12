@@ -125,7 +125,7 @@ class SurfaceLoad(WeakBcsBase):
 
     Derived from WeakBcsBase.
     """
-    def __init__(self, bcs_triangles, lower_point, upper_point, modulus, direction):
+    def __init__(self, bcs_triangles, lower_point, upper_point, modulus, direction,model_part_name):
         """The constructor."""
         super(SurfaceLoad, self).__init__(bcs_triangles, lower_point, upper_point)
 
@@ -133,7 +133,7 @@ class SurfaceLoad(WeakBcsBase):
         if norm_direction < 1e-10:
             Exception("SurfaceLoad :: Norm of 'direction' is close to zero.")
         normalized_direction = direction / norm_direction
-
+        self.model_part_name = model_part_name
         self.force = modulus * normalized_direction
         self.conditions = []
 
@@ -161,7 +161,7 @@ class SurfaceLoad(WeakBcsBase):
 
                 weight = point.Weight() # Weight contains all mapping terms.
                 if weight > 1e-14:
-                    condition = model_part.GetSubModelPart('Neumann_BC').CreateNewCondition("LoadCondition", id_counter, quadrature_point_geometries_boundary[0], properties)
+                    condition = model_part.GetSubModelPart(self.model_part_name).CreateNewCondition("LoadCondition", id_counter, quadrature_point_geometries_boundary[0], properties)
 
                     force_x = weight * self.force[0]
                     force_y = weight * self.force[1]

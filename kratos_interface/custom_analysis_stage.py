@@ -90,7 +90,7 @@ class CustomAnalysisStage(StructuralMechanicsAnalysis):
                       grid_settings.GetDoubleVector("upper_bound_xyz")]
         bounds_uvw = [grid_settings.GetDoubleVector("lower_bound_uvw"),
                       grid_settings.GetDoubleVector("upper_bound_uvw")]
-        ModelPartUtilities.AddConditionsToModelPart(model_part, self.boundary_conditions, bounds_xyz, bounds_uvw)
+        ModelPartUtilities.AddConditionsToModelPart(model_part, self.boundary_conditions, bounds_xyz, bounds_uvw,self.HasMultipleCoupledparts)
 
         # Add Dofs
         KM.VariableUtils().AddDof(KM.DISPLACEMENT_X, KM.REACTION_X, model_part)
