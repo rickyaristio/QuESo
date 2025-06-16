@@ -21,15 +21,21 @@ class CustomAnalysisStage(StructuralMechanicsAnalysis):
         self.queso_settings = queso_settings
 
         self.lagrange_dofs_required = False
+        CoupledInterfacesSize = 0
         for condition_param in self.queso_settings.GetList("conditions_settings_list"):
             if( condition_param.GetString("condition_type") == "LagrangeSupportCondition" ):
                 self.lagrange_dofs_required = True
+            if( condition_param.GetString("condition_type") == "SurfaceLoadCondition" ):
+                CoupledInterfacesSize += 1 # Count Shell-Solid coupled cases 
 
         nurbs_model_part = model.CreateModelPart("NurbsMesh")
         nurbs_model_part.AddNodalSolutionStepVariable(KM.DISPLACEMENT)
         nurbs_model_part.AddNodalSolutionStepVariable(KM.REACTION)
         nurbs_model_part.CreateSubModelPart("Dirichlet_BC")
-        nurbs_model_part.CreateSubModelPart("Neumann_BC")
+        for i in range(CoupledInterfacesSize): #Create new Model Part for each coupled case
+            string_number = str(i+1)
+            model_part_name = 'Neumann_BC' + "_" + string_number
+            nurbs_model_part.CreateSubModelPart(model_part_name)
 
         if self.lagrange_dofs_required:
             nurbs_model_part.AddNodalSolutionStepVariable(KM.VECTOR_LAGRANGE_MULTIPLIER)
@@ -90,7 +96,7 @@ class CustomAnalysisStage(StructuralMechanicsAnalysis):
                       grid_settings.GetDoubleVector("upper_bound_xyz")]
         bounds_uvw = [grid_settings.GetDoubleVector("lower_bound_uvw"),
                       grid_settings.GetDoubleVector("upper_bound_uvw")]
-        ModelPartUtilities.AddConditionsToModelPart(model_part, self.boundary_conditions, bounds_xyz, bounds_uvw,self.HasMultipleCoupledparts)
+        ModelPartUtilities.AddConditionsToModelPart(model_part, self.boundary_conditions, bounds_xyz, bounds_uvw)
 
         # Add Dofs
         KM.VariableUtils().AddDof(KM.DISPLACEMENT_X, KM.REACTION_X, model_part)

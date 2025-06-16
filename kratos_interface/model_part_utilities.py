@@ -94,10 +94,10 @@ class ModelPartUtilities:
                 KratosNurbsVolumeModelPart.CreateNewElement('SmallDisplacementElement3D8N', el_count, quadrature_point_geometries[0], volume_properties)
 
     @staticmethod
-    def AddConditionsToModelPart(KratosNurbsVolumeModelPart, Conditions, BoundsXYZ, BoundsUVW, multiple_coupled_parts = False):
+    def AddConditionsToModelPart(KratosNurbsVolumeModelPart, Conditions, BoundsXYZ, BoundsUVW):
         ''' Adds the QuESo elements to the KratosNurbsVolumeModelPart. '''
         boundary_conditions = []
-        MeasureConditions = 0
+        MeasureConditions = 1
         for bc in Conditions:
             if bc.IsWeakCondition():
                 condition_settings = bc.GetSettings()
@@ -116,11 +116,9 @@ class ModelPartUtilities:
                 elif( type_name == "SurfaceLoadCondition" ):
                     modulus = condition_settings.GetDouble("modulus")
                     direction = condition_settings.GetDoubleVector("direction")
-                    model_part_name = 'Neumann_BC'
-                    if multiple_coupled_parts == True :
-                        MeasureConditions += 1
-                        string_number = str(MeasureConditions)
-                        model_part_name = model_part_name + "_" + string_number
+                    string_number = str(MeasureConditions)
+                    MeasureConditions += 1
+                    model_part_name = 'Neumann_BC' + "_" + string_number
                     for condition_segment in bc:
                         neumann_triangles = condition_segment.GetTriangleMesh()
                         boundary_conditions.append(SurfaceLoad(neumann_triangles, BoundsXYZ, BoundsUVW, modulus, direction,model_part_name ) )
