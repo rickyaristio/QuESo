@@ -145,7 +145,16 @@ class SurfaceLoad(WeakBcsBase):
 
         num_triangles = self.bcs_triangles.NumOfTriangles()
         for id in range(num_triangles):
-
+            
+            # Create Kratos triangle geometries (Triangle3D3)
+            p1 = self.bcs_triangles.P1(id)
+            p2 = self.bcs_triangles.P2(id)
+            p3 = self.bcs_triangles.P3(id)
+            p1 = KM.Node(1,p1[0],p1[1],p1[2])
+            p2 = KM.Node(2,p2[0],p2[1],p2[2])
+            p3 = KM.Node(3,p3[0],p3[1],p3[2])
+            KratosTriangle = KM.Triangle3D3(p1,p2,p3)
+            
             #Get points in physical space.
             points = self.bcs_triangles.GetIntegrationPointsGlobal(id, 1)
             #Create kratos condition on each point.
@@ -158,11 +167,22 @@ class SurfaceLoad(WeakBcsBase):
                 integration_points.append([local_point[0], local_point[1], local_point[2], point.Weight()])
                 quadrature_point_geometries_boundary = KM.GeometriesVector()
                 nurbs_volume.CreateQuadraturePointGeometries(quadrature_point_geometries_boundary, 2, integration_points)
-
+                
+                # TODO: Delete the following if normals are computed correctly
+                # Check if QuesoNormals == Kratos(Triangle3D3)Normals
+                NormalKratosPointTriangle = np.array([KratosTriangle.Normal(local_point)[0],KratosTriangle.Normal(local_point)[1],KratosTriangle.Normal(local_point)[2]])
+                NormalKratosPointTriangle = NormalKratosPointTriangle/np.linalg.norm(NormalKratosPointTriangle)
+                NormalQuesoTriangle = np.array([self.bcs_triangles.Normal(id)[0],self.bcs_triangles.Normal(id)[1],self.bcs_triangles.Normal(id)[2]])
+                if np.linalg.norm(NormalKratosPointTriangle-NormalQuesoTriangle) > 1E-8:
+                    print("Normals used for the solid for the solid-shell coupling are passed using geometry triangles (Triangle3D3) "
+                          "parent geometry. Though in Queso the boundary triangle and the Triangle3D3 are not exactly the same")
+                
+                
                 weight = point.Weight() # Weight contains all mapping terms.
                 if weight > 1e-14:
                     condition = model_part.GetSubModelPart(self.model_part_name).CreateNewCondition("LoadCondition", id_counter, quadrature_point_geometries_boundary[0], properties)
 
+                    #TODO: Bind SetParentGeometry to Kratos QuadraturePointGeometry and set Triangle3D3 as parent
                     force_x = weight * self.force[0]
                     force_y = weight * self.force[1]
                     force_z = weight * self.force[2]
